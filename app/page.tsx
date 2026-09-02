@@ -2,10 +2,10 @@ import Link from "next/link";
 import { fetchLiveIpos, fetchLivePosts } from "@/lib/api";
 import { getAllCategories } from "@/lib/posts";
 import ArticleCover from "@/components/ArticleCover";
-import IpoCard from "@/components/IpoCard";
+import GmpTable from "@/components/GmpTable";
 import Pagination from "@/components/Pagination";
 import { siteConfig } from "@/lib/site-config";
-import { TrendingUp, Sparkles, BookOpen, Clock, ArrowRight, Flame, Calendar, ShieldCheck } from "lucide-react";
+import { TrendingUp, BookOpen, Clock, ArrowRight, Flame, Calendar, ArrowUpRight } from "lucide-react";
 
 export const revalidate = 60;
 
@@ -19,9 +19,9 @@ export default async function HomePage({
   const { page = "1", category = "All" } = await searchParams;
   const currentPage = Math.max(1, parseInt(page, 10) || 1);
 
-  // Parallel fetch: Live IPOs + Blog Posts
-  const [{ ipos: liveIpos }, allPosts] = await Promise.all([
-    fetchLiveIpos({ limit: 6 }),
+  // Parallel fetch: Live IPOs from API + All Blog Posts
+  const [{ ipos: allIpos }, allPosts] = await Promise.all([
+    fetchLiveIpos({ limit: 50 }),
     fetchLivePosts(),
   ]);
 
@@ -33,7 +33,7 @@ export default async function HomePage({
       ? allPosts
       : allPosts.filter((p) => p.category.toLowerCase() === category.toLowerCase());
 
-  // Pagination
+  // Pagination Math
   const totalPosts = filteredPosts.length;
   const totalPages = Math.ceil(totalPosts / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -64,27 +64,11 @@ export default async function HomePage({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
       />
 
-      {/* Sharp Top Banner (Clean & Compact) */}
-      <div className="rounded-xl border border-emerald-500/30 bg-emerald-950/20 dark:bg-emerald-950/30 p-5 sm:p-6 mb-8 shadow-sm">
-        <div className="max-w-3xl">
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 mb-2.5 uppercase tracking-wider">
-            <Sparkles size={11} />
-            <span>Primary Market Intelligence Desk</span>
-          </div>
-          <h1 className="font-bold text-xl sm:text-2xl lg:text-3xl tracking-tight text-slate-900 dark:text-white leading-tight">
-            {siteConfig.name}
-          </h1>
-          <p className="text-slate-600 dark:text-slate-300 text-xs sm:text-sm mt-1.5 leading-relaxed font-normal">
-            Live Grey Market Premium (GMP Today) rates, upcoming IPO dates, RHP prospectus analysis, and institutional anchor audits.
-          </p>
-        </div>
-      </div>
-
-      {/* 4 Sharp Quick Nav Action Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
+      {/* 4 Quick Market Action Pills at the Very Top */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
         <Link
           href="/ipo/gmp"
-          className="group rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3.5 hover:border-emerald-500/50 hover:shadow-sm transition-all flex items-center justify-between"
+          className="group rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 hover:border-emerald-500/60 hover:shadow-sm transition-all flex items-center justify-between"
         >
           <div>
             <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider block">
@@ -99,14 +83,14 @@ export default async function HomePage({
 
         <Link
           href="/ipo/upcoming"
-          className="group rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3.5 hover:border-sky-500/50 hover:shadow-sm transition-all flex items-center justify-between"
+          className="group rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 hover:border-sky-500/60 hover:shadow-sm transition-all flex items-center justify-between"
         >
           <div>
             <span className="text-[10px] font-bold text-sky-600 uppercase tracking-wider block">
               Upcoming Issues
             </span>
             <span className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white mt-0.5 block">
-              2026 Schedule →
+              2026 Calendar →
             </span>
           </div>
           <Calendar size={16} className="text-sky-600 group-hover:scale-110 transition-transform" />
@@ -114,7 +98,7 @@ export default async function HomePage({
 
         <Link
           href="/ipo/open"
-          className="group rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3.5 hover:border-amber-500/50 hover:shadow-sm transition-all flex items-center justify-between"
+          className="group rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 hover:border-amber-500/60 hover:shadow-sm transition-all flex items-center justify-between"
         >
           <div>
             <span className="text-[10px] font-bold text-amber-600 uppercase tracking-wider block">
@@ -129,7 +113,7 @@ export default async function HomePage({
 
         <Link
           href="/category/IPO%20Review"
-          className="group rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3.5 hover:border-purple-500/50 hover:shadow-sm transition-all flex items-center justify-between"
+          className="group rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 hover:border-purple-500/60 hover:shadow-sm transition-all flex items-center justify-between"
         >
           <div>
             <span className="text-[10px] font-bold text-purple-600 uppercase tracking-wider block">
@@ -143,28 +127,32 @@ export default async function HomePage({
         </Link>
       </div>
 
-      {/* Live Featured IPO Cards (Fetched Live from API) */}
-      {liveIpos.length > 0 && isFirstPage && (
+      {/* High-Density Live GMP Data Table (Top of the Homepage) */}
+      {isFirstPage && (
         <section className="mb-10">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="font-bold text-base sm:text-lg text-slate-900 dark:text-white flex items-center gap-1.5">
-              <Flame size={16} className="text-emerald-600" />
-              <span>Live IPO GMP &amp; Active Issues</span>
-            </h2>
-            <Link href="/ipo/gmp" className="text-xs font-semibold text-emerald-600 hover:underline">
-              View All Live GMP →
+            <div>
+              <h2 className="font-bold text-base sm:text-lg text-slate-900 dark:text-white flex items-center gap-1.5">
+                <Flame size={16} className="text-emerald-600" />
+                <span>Live IPO GMP &amp; Active Issues (Mainboard &amp; SME)</span>
+              </h2>
+              <p className="text-[11px] text-slate-500 mt-0.5">
+                Hourly cross-checked rates with live price bands, lot size &amp; estimated listing gains
+              </p>
+            </div>
+            <Link
+              href="/ipo/gmp"
+              className="text-xs font-bold text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 flex items-center gap-0.5"
+            >
+              Full Screen Table <ArrowUpRight size={13} />
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {liveIpos.slice(0, 3).map((ipo) => (
-              <IpoCard key={ipo.slug} ipo={ipo} />
-            ))}
-          </div>
+          <GmpTable ipos={allIpos} />
         </section>
       )}
 
-      {/* Featured Breaking Analysis */}
+      {/* Featured Breaking Research */}
       {heroPost && (
         <section className="mb-10">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
