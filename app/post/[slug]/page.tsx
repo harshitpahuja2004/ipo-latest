@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { getAllPosts, getPostBySlug, getRelatedPosts } from "@/lib/posts";
+import { getAllPosts, fetchPostBySlug, getRelatedPosts } from "@/lib/posts";
 import { renderMarkdown, extractToc } from "@/lib/markdown";
 import ArticleCover from "@/components/ArticleCover";
 import { siteConfig } from "@/lib/site-config";
 import { Clock, ShieldCheck, ArrowLeft, ArrowRight, BookOpen, CheckCircle2 } from "lucide-react";
 
-export const revalidate = 3600;
+export const revalidate = 300;
 export const dynamicParams = true;
 
 export async function generateStaticParams() {
@@ -21,7 +21,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const post = getPostBySlug(slug);
+  const post = await fetchPostBySlug(slug);
 
   if (!post) {
     return { title: "Article Not Found", robots: { index: false } };
@@ -48,7 +48,7 @@ export default async function ArticleDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const post = getPostBySlug(slug);
+  const post = await fetchPostBySlug(slug);
 
   if (!post) notFound();
 

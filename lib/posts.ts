@@ -3392,6 +3392,42 @@ Cult.fit is India's pioneer consumer health-tech franchise with unprecedented br
 
 
 
+const API_URL = (process.env.NEXT_PUBLIC_API_URL || "").replace(/\/$/, "");
+
+export async function fetchAllPosts(): Promise<PostContent[]> {
+  if (!API_URL) return posts;
+  try {
+    const res = await fetch(`${API_URL}/api/blog/posts`, {
+      next: { revalidate: 300 },
+    });
+    if (!res.ok) return posts;
+    const data = await res.json();
+    if (Array.isArray(data) && data.length > 0) {
+      return data;
+    }
+    return posts;
+  } catch {
+    return posts;
+  }
+}
+
+export async function fetchPostBySlug(slug: string): Promise<PostContent | undefined> {
+  if (!API_URL) return getPostBySlug(slug);
+  try {
+    const res = await fetch(`${API_URL}/api/blog/posts/${slug}`, {
+      next: { revalidate: 300 },
+    });
+    if (!res.ok) return getPostBySlug(slug);
+    const data = await res.json();
+    if (data && data.slug) {
+      return data;
+    }
+    return getPostBySlug(slug);
+  } catch {
+    return getPostBySlug(slug);
+  }
+}
+
 export function getAllPosts(): PostContent[] {
   return posts;
 }
@@ -3429,3 +3465,4 @@ export function getAllCategories(): string[] {
   const cats = Array.from(new Set(posts.map((p) => p.category).filter(Boolean)));
   return ["All", ...cats];
 }
+

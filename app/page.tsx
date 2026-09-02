@@ -1,13 +1,13 @@
 import Link from "next/link";
-import { getAllPosts, getAllCategories } from "@/lib/posts";
+import { fetchAllPosts, getAllCategories } from "@/lib/posts";
 import ArticleCover from "@/components/ArticleCover";
 import { siteConfig } from "@/lib/site-config";
 import { TrendingUp, Sparkles, BookOpen, Clock, ArrowRight, Shield } from "lucide-react";
 
-export const revalidate = 3600;
+export const revalidate = 300;
 
-export default function HomePage() {
-  const posts = getAllPosts();
+export default async function HomePage() {
+  const posts = await fetchAllPosts();
   const heroPost = posts[0];
   const sidePosts = posts.slice(1, 4);
   const remainingPosts = posts.slice(4);
