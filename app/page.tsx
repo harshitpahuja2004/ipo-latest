@@ -1,40 +1,83 @@
 import Link from "next/link";
 import { fetchAllPosts, getAllCategories } from "@/lib/posts";
 import ArticleCover from "@/components/ArticleCover";
+import Pagination from "@/components/Pagination";
 import { siteConfig } from "@/lib/site-config";
-import { TrendingUp, Sparkles, BookOpen, Clock, ArrowRight, Shield } from "lucide-react";
+import { TrendingUp, Sparkles, BookOpen, Clock, ArrowRight, ShieldCheck } from "lucide-react";
 
 export const revalidate = 300;
 
-export default async function HomePage() {
-  const posts = await fetchAllPosts();
-  const heroPost = posts[0];
-  const sidePosts = posts.slice(1, 4);
-  const remainingPosts = posts.slice(4);
+const ITEMS_PER_PAGE = 12;
+
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string; category?: string }>;
+}) {
+  const { page = "1", category = "All" } = await searchParams;
+  const currentPage = Math.max(1, parseInt(page, 10) || 1);
+
+  const allPosts = await fetchAllPosts();
   const categories = getAllCategories();
+
+  // Filter by category if specified
+  const filteredPosts =
+    category === "All"
+      ? allPosts
+      : allPosts.filter((p) => p.category.toLowerCase() === category.toLowerCase());
+
+  // Pagination Math
+  const totalPosts = filteredPosts.length;
+  const totalPages = Math.ceil(totalPosts / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const paginatedPosts = filteredPosts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
+  // First page featured hero items
+  const isFirstPage = currentPage === 1 && category === "All";
+  const heroPost = isFirstPage ? paginatedPosts[0] : null;
+  const sidePosts = isFirstPage ? paginatedPosts.slice(1, 4) : [];
+  const gridPosts = isFirstPage ? paginatedPosts.slice(4) : paginatedPosts;
+
+  const websiteJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: siteConfig.name,
+    url: siteConfig.url,
+    description: siteConfig.description,
+    potentialAction: {
+      "@type": "SearchAction",
+      target: `${siteConfig.url}/search?q={search_term_string}`,
+      "query-input": "required name=search_term_string",
+    },
+  };
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 py-8">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
+      />
+
       {/* Editorial Announcement Banner */}
-      <div className="rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-700 p-6 sm:p-8 text-white mb-10 shadow-lg relative overflow-hidden">
-        <div className="relative z-10 max-w-2xl">
+      <div className="rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-700 to-slate-900 p-6 sm:p-8 text-white mb-10 shadow-lg relative overflow-hidden">
+        <div className="relative z-10 max-w-3xl">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-white/20 backdrop-blur-md mb-3">
             <Sparkles size={13} />
-            <span>Independent Capital Market Intelligence</span>
+            <span>Daily Primary Market Research &amp; Live GMP Accuracy</span>
           </div>
           <h1 className="font-bold text-2xl sm:text-4xl tracking-tight leading-tight">
             {siteConfig.name}
           </h1>
           <p className="text-emerald-100 text-sm sm:text-base mt-2 leading-relaxed">
-            In-depth prospectus audits, unicorn IPO analyses, SEBI regulatory playbooks, and tax strategies authored by our research team.
+            Data-driven IPO prospectus audits, unlisted share valuations (NSE, Cult.fit, Tata EV), anchor lock-in calendars, and SEBI regulatory playbooks.
           </p>
         </div>
       </div>
 
-      {/* Featured Breaking Analysis Grid */}
+      {/* Featured Highlight Block (Shown on Page 1) */}
       {heroPost && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
-          {/* Main Hero Card */}
+          {/* Main Hero Highlight */}
           <Link
             href={`/post/${heroPost.slug}`}
             className="lg:col-span-2 group rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden hover:border-emerald-500/50 hover:shadow-xl transition-all flex flex-col justify-between"
@@ -98,27 +141,41 @@ export default async function HomePage() {
         </div>
       )}
 
-      {/* Main Articles Stream */}
+      {/* Category Pills & Total Counter */}
       <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
-        <h3 className="font-bold text-lg text-slate-900 dark:text-white flex items-center gap-2">
-          <BookOpen size={18} className="text-emerald-600" />
-          <span>Latest Market Intelligence ({posts.length} In-Depth Articles)</span>
-        </h3>
+        <div>
+          <h3 className="font-bold text-lg text-slate-900 dark:text-white flex items-center gap-2">
+            <BookOpen size={18} className="text-emerald-600" />
+            <span>Latest Market Intelligence</span>
+          </h3>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Showing Page {currentPage} of {totalPages} ({totalPosts} total published guides &amp; reviews)
+          </p>
+        </div>
+
         <div className="flex flex-wrap gap-2 text-xs">
-          {categories.slice(0, 5).map((cat) => (
-            <Link
-              key={cat}
-              href={cat === "All" ? "/" : `/category/${encodeURIComponent(cat)}`}
-              className="rounded-full border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-1 text-slate-600 dark:text-slate-300 hover:border-emerald-500"
-            >
-              {cat}
-            </Link>
-          ))}
+          {categories.map((cat) => {
+            const isActive = category === cat;
+            return (
+              <Link
+                key={cat}
+                href={cat === "All" ? "/" : `/?category=${encodeURIComponent(cat)}`}
+                className={`rounded-full px-3 py-1 font-medium transition-all ${
+                  isActive
+                    ? "bg-emerald-600 text-white shadow-sm font-semibold"
+                    : "border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:border-emerald-500"
+                }`}
+              >
+                {cat}
+              </Link>
+            );
+          })}
         </div>
       </div>
 
+      {/* Grid Articles Stream */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {remainingPosts.map((post) => (
+        {gridPosts.map((post) => (
           <Link
             key={post.slug}
             href={`/post/${post.slug}`}
@@ -149,6 +206,14 @@ export default async function HomePage() {
           </Link>
         ))}
       </div>
+
+      {/* SSR Pagination Controls */}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        basePath="/"
+        otherParams={category !== "All" ? { category } : {}}
+      />
     </div>
   );
 }
