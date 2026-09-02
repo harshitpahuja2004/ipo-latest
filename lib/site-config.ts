@@ -7,7 +7,7 @@ export const siteConfig = {
   tagline: "Live IPO GMP Today, Allotment Status, SEBI Reviews & Market Intelligence",
   description: "Comprehensive daily coverage of Indian Mainboard & SME IPOs: live GMP trends, subscription numbers, RHP prospectus analysis, and SEBI tax playbooks.",
   contactEmail: "iposathi@gmail.com",
-  editorialAuthor: "Harshit Pahuja",
-  editorialRole: "Chief Financial Analyst & Primary Market Lead",
+  editorialAuthor: "Editorial Research Desk",
+  editorialRole: "Primary Market Intelligence & Research Desk",
   adsenseClient: "ca-pub-3558002792545976",
 };

@@ -122,7 +122,7 @@ export default async function ArticleDetailPage({
             <div className="flex flex-wrap items-center justify-between gap-4 mt-6 pt-5 border-t border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-sm">
-                  HP
+                  ED
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
@@ -141,7 +141,7 @@ export default async function ArticleDetailPage({
 
               <div className="flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-3 py-1.5 rounded-lg">
                 <ShieldCheck size={14} />
-                <span>SEBI Regulatory &amp; RHP Audited</span>
+                <span>SEBI Regulatory &amp; RED Audited</span>
               </div>
             </div>
           </header>
@@ -158,7 +158,7 @@ export default async function ArticleDetailPage({
               <span>Editorial Key Takeaways</span>
             </h3>
             <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-              This analysis is based on official Draft Red Herring Prospectus (DRHP) filings, historical peer valuation multiples, and exchange data. Figures are audited for institutional accuracy.
+              This analysis is based on official Draft Red Herring Prospectus (DRED) filings, historical peer valuation multiples, and exchange data. Figures are audited for institutional accuracy.
             </p>
           </div>
 
@@ -189,7 +189,7 @@ export default async function ArticleDetailPage({
           {/* Author Bio Box */}
           <div className="mt-12 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 flex flex-col sm:flex-row gap-5 items-start">
             <div className="w-14 h-14 rounded-2xl bg-emerald-600 text-white flex items-center justify-center font-bold text-lg shrink-0">
-              HP
+              ED
             </div>
             <div>
               <h4 className="font-bold text-base text-slate-900 dark:text-white">
@@ -199,7 +199,7 @@ export default async function ArticleDetailPage({
                 Primary Market Analyst &amp; Senior Financial Journalist · {siteConfig.name}
               </p>
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-2.5 leading-relaxed">
-                Harshit specializes in reading SEBI Red Herring Prospectuses, institutional anchor allocations, and forensic balance sheet audits. Every report follows rigorous E-E-A-T research standards without promoter sponsorship.
+                Our research desk specializes in reading SEBI Red Herring Prospectuses, institutional anchor allocations, and forensic balance sheet audits. Every report follows rigorous E-E-A-T research standards without promoter sponsorship.
               </p>
             </div>
           </div>
