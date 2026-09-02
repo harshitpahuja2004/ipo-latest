@@ -1,11 +1,13 @@
 import Link from "next/link";
-import { fetchAllPosts, getAllCategories } from "@/lib/posts";
+import { fetchLiveIpos, fetchLivePosts } from "@/lib/api";
+import { getAllCategories } from "@/lib/posts";
 import ArticleCover from "@/components/ArticleCover";
+import IpoCard from "@/components/IpoCard";
 import Pagination from "@/components/Pagination";
 import { siteConfig } from "@/lib/site-config";
-import { TrendingUp, Sparkles, BookOpen, Clock, ArrowRight, ShieldCheck } from "lucide-react";
+import { TrendingUp, Sparkles, BookOpen, Clock, ArrowRight, Flame, Calendar, ShieldCheck } from "lucide-react";
 
-export const revalidate = 300;
+export const revalidate = 60;
 
 const ITEMS_PER_PAGE = 12;
 
@@ -17,7 +19,12 @@ export default async function HomePage({
   const { page = "1", category = "All" } = await searchParams;
   const currentPage = Math.max(1, parseInt(page, 10) || 1);
 
-  const allPosts = await fetchAllPosts();
+  // Parallel fetch: Live IPOs from API + All Blog Posts
+  const [{ ipos: liveIpos }, allPosts] = await Promise.all([
+    fetchLiveIpos({ limit: 6 }),
+    fetchLivePosts(),
+  ]);
+
   const categories = getAllCategories();
 
   // Filter by category if specified
@@ -32,7 +39,6 @@ export default async function HomePage({
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const paginatedPosts = filteredPosts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
-  // First page featured hero items
   const isFirstPage = currentPage === 1 && category === "All";
   const heroPost = isFirstPage ? paginatedPosts[0] : null;
   const sidePosts = isFirstPage ? paginatedPosts.slice(1, 4) : [];
@@ -59,7 +65,7 @@ export default async function HomePage({
       />
 
       {/* Editorial Announcement Banner */}
-      <div className="rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-700 to-slate-900 p-6 sm:p-8 text-white mb-10 shadow-lg relative overflow-hidden">
+      <div className="rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-700 to-slate-900 p-6 sm:p-8 text-white mb-8 shadow-lg relative overflow-hidden">
         <div className="relative z-10 max-w-3xl">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-white/20 backdrop-blur-md mb-3">
             <Sparkles size={13} />
@@ -69,12 +75,96 @@ export default async function HomePage({
             {siteConfig.name}
           </h1>
           <p className="text-emerald-100 text-sm sm:text-base mt-2 leading-relaxed">
-            Data-driven IPO prospectus audits, unlisted share valuations (NSE, Cult.fit, Tata EV), anchor lock-in calendars, and SEBI regulatory playbooks.
+            Live IPO Grey Market Premium (GMP Today), upcoming IPO schedules, RHP prospectus analysis, and institutional anchor audits.
           </p>
         </div>
       </div>
 
-      {/* Featured Highlight Block (Shown on Page 1) */}
+      {/* Live Market Quick Navigation Bar */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-10">
+        <Link
+          href="/ipo/gmp"
+          className="group rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-4 hover:bg-emerald-500/10 transition-all flex items-center justify-between"
+        >
+          <div>
+            <span className="text-[11px] font-bold text-emerald-600 uppercase tracking-wider block">
+              Live GMP Today
+            </span>
+            <span className="font-bold text-sm sm:text-base text-slate-900 dark:text-white mt-0.5 block">
+              Grey Market Rates →
+            </span>
+          </div>
+          <Flame size={20} className="text-emerald-600 group-hover:scale-110 transition-transform" />
+        </Link>
+
+        <Link
+          href="/ipo/upcoming"
+          className="group rounded-xl border border-sky-500/30 bg-sky-500/5 p-4 hover:bg-sky-500/10 transition-all flex items-center justify-between"
+        >
+          <div>
+            <span className="text-[11px] font-bold text-sky-600 uppercase tracking-wider block">
+              Upcoming Issues
+            </span>
+            <span className="font-bold text-sm sm:text-base text-slate-900 dark:text-white mt-0.5 block">
+              2026 Calendar →
+            </span>
+          </div>
+          <Calendar size={20} className="text-sky-600 group-hover:scale-110 transition-transform" />
+        </Link>
+
+        <Link
+          href="/ipo/open"
+          className="group rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 hover:bg-amber-500/10 transition-all flex items-center justify-between"
+        >
+          <div>
+            <span className="text-[11px] font-bold text-amber-600 uppercase tracking-wider block">
+              Open For Bidding
+            </span>
+            <span className="font-bold text-sm sm:text-base text-slate-900 dark:text-white mt-0.5 block">
+              Active IPOs Today →
+            </span>
+          </div>
+          <Clock size={20} className="text-amber-600 group-hover:scale-110 transition-transform" />
+        </Link>
+
+        <Link
+          href="/category/IPO%20Review"
+          className="group rounded-xl border border-purple-500/30 bg-purple-500/5 p-4 hover:bg-purple-500/10 transition-all flex items-center justify-between"
+        >
+          <div>
+            <span className="text-[11px] font-bold text-purple-600 uppercase tracking-wider block">
+              Prospectus Audits
+            </span>
+            <span className="font-bold text-sm sm:text-base text-slate-900 dark:text-white mt-0.5 block">
+              80+ In-Depth Reviews →
+            </span>
+          </div>
+          <BookOpen size={20} className="text-purple-600 group-hover:scale-110 transition-transform" />
+        </Link>
+      </div>
+
+      {/* Live Featured IPOs Section (Fetched Live from API) */}
+      {liveIpos.length > 0 && isFirstPage && (
+        <div className="mb-12">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-bold text-xl text-slate-900 dark:text-white flex items-center gap-2">
+              <Flame size={18} className="text-emerald-600" />
+              <span>Live IPO GMP &amp; Active Issues (Updated Live from API)</span>
+            </h2>
+            <Link href="/ipo/gmp" className="text-xs font-semibold text-emerald-600 hover:underline">
+              View All Live GMP →
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {liveIpos.slice(0, 3).map((ipo) => (
+              <IpoCard key={ipo.slug} ipo={ipo} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Featured Breaking Analysis Grid */}
       {heroPost && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
           {/* Main Hero Highlight */}
@@ -141,12 +231,12 @@ export default async function HomePage({
         </div>
       )}
 
-      {/* Category Pills & Total Counter */}
+      {/* Main Articles Stream */}
       <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
         <div>
           <h3 className="font-bold text-lg text-slate-900 dark:text-white flex items-center gap-2">
             <BookOpen size={18} className="text-emerald-600" />
-            <span>Latest Market Intelligence</span>
+            <span>In-Depth Prospectus Audits &amp; Playbooks</span>
           </h3>
           <p className="text-xs text-slate-500 mt-0.5">
             Showing Page {currentPage} of {totalPages} ({totalPosts} total published guides &amp; reviews)
@@ -173,7 +263,6 @@ export default async function HomePage({
         </div>
       </div>
 
-      {/* Grid Articles Stream */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {gridPosts.map((post) => (
           <Link

@@ -11,6 +11,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   const staticRoutes = [
     "",
+    "/ipo/gmp",
+    "/ipo/upcoming",
+    "/ipo/open",
     "/about",
     "/contact",
     "/privacy",

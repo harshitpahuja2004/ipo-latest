@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { siteConfig } from "@/lib/site-config";
-import { Search, Flame, BookOpen, ShieldCheck } from "lucide-react";
+import { Search, Flame, Calendar, Clock, BookOpen } from "lucide-react";
 
 export default function Header() {
   return (
@@ -21,22 +21,25 @@ export default function Header() {
           </div>
         </Link>
 
-        {/* Navigation Links */}
-        <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600 dark:text-slate-300">
-          <Link href="/" className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors flex items-center gap-1">
+        {/* Live Market Navigation Links */}
+        <nav className="hidden lg:flex items-center gap-5 text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300">
+          <Link href="/" className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
             Home
           </Link>
-          <Link href="/category/IPO%20Review" className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors flex items-center gap-1">
-            <Flame size={14} className="text-emerald-600" /> IPO Reviews
+          <Link href="/ipo/gmp" className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
+            <Flame size={14} /> Live GMP Today
           </Link>
-          <Link href="/category/Guide" className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors flex items-center gap-1">
-            <BookOpen size={14} /> Investor Guides
+          <Link href="/ipo/upcoming" className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors flex items-center gap-1">
+            <Calendar size={14} /> Upcoming IPOs
           </Link>
-          <Link href="/about" className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
-            About
+          <Link href="/ipo/open" className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors flex items-center gap-1">
+            <Clock size={14} /> Open IPOs
           </Link>
-          <Link href="/contact" className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
-            Contact
+          <Link href="/category/IPO%20Review" className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
+            IPO Reviews
+          </Link>
+          <Link href="/category/Guide" className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
+            Guides
           </Link>
         </nav>
 
@@ -46,7 +49,7 @@ export default function Header() {
           className="flex items-center gap-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 px-3 py-1.5 text-xs text-slate-500 hover:border-emerald-500 transition-colors"
         >
           <Search size={14} />
-          <span className="hidden sm:inline">Search 80+ IPO reviews...</span>
+          <span className="hidden sm:inline">Search GMP &amp; IPOs...</span>
         </Link>
       </div>
     </header>
